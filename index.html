@@ -1,20 +1,60 @@
 <!DOCTYPE html>
 
-<html lang="fr">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Equi. - Expertise Radiographique</title>
 <script src=""></script>
-<script type="importmap">
-{
-"imports": {
-"@google/generative-ai": ""
-}
-}
-</script>
+<script type="importmap">{"imports": {"@google/generative-ai": ""}}</script>
 </head>
-<body class="bg-white text-slate-900 font-serif">
+<body class="p-5 text-center font-sans">
+<h1 class="text-3xl font-bold text-emerald-600 mb-5">Equi. Expertise</h1>
+<div class="border-4 border-dashed p-10 rounded-3xl bg-gray-50">
+<input type="file" id="file-input" class="mb-5">
+<div id="preview-area" class="hidden">
+<img id="preview" class="max-h-64 mx-auto mb-5 rounded">
+<button id="btn" class="bg-black text-white px-8 py-2 rounded-full">Analyser la radio</button>
+</div>
+<p id="loading" class="hidden text-emerald-600 font-bold">Analyse en cours...</p>
+</div>
+<div id="result" class="hidden mt-5 p-5 bg-gray-100 rounded text-left"></div>
+<script type="module">
+import { GoogleGenerativeAI } from "@google/generative-ai";
+const fileInput = document.getElementById('file-input');
+const btn = document.getElementById('btn');
+const resultDiv = document.getElementById('result');
+let base64 = null;
+
+fileInput.onchange = (e) => {
+const reader = new FileReader();
+reader.onload = () => {
+base64 = reader.result;
+document.getElementById('preview').src = base64;
+document.getElementById('preview-area').classList.remove('hidden');
+};
+reader.readAsDataURL(e.target.files[0]);
+};
+
+btn.onclick = async () => {
+const API_KEY = "AIzaSyDDuKCViFUqYz7ntlAlTSu3JCH6z6YWX70";
+if (API_KEY === "TA_CLE_ICI") { alert("Mets ta clé !"); return; }
+document.getElementById('loading').classList.remove('hidden');
+try {
+const genAI = new GoogleGenerativeAI(API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const res = await model.generateContent([
+"Analyse cette radio de cheval.",
+{ inlineData: { data: base64.split(',')[1], mimeType: "image/jpeg" } }
+]);
+resultDiv.innerText = res.response.text();
+resultDiv.classList.remove('hidden');
+} catch (err) {
+resultDiv.innerText = "Erreur : " + err.message;
+resultDiv.classList.remove('hidden');
+} finally {
+document.getElementById('loading').classList.add('hidden');
+}
+};
+</script>
 
 </body>
 </html>
